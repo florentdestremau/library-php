@@ -1,0 +1,122 @@
+<div {{ attributes }}>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Titre du livre, nom de l'adhérent..."
+                               data-model="debounce(300)|query"
+                               value="{{ query }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" data-model="status">
+                        <option value="">Tous les statuts</option>
+                        <option value="borrowed" {% if status == 'borrowed' %}selected{% endif %}>En cours</option>
+                        <option value="returned" {% if status == 'returned' %}selected{% endif %}>Retourné</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <a href="{{ path('app_loan_index') }}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-lg me-1"></i>Reset
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div data-loading="addClass(opacity-50)">
+        {% set loans = this.loans %}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted small">{{ loans.totalItemCount }} emprunt(s)</span>
+        </div>
+
+        {% if loans|length == 0 %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                Aucun emprunt trouvé.
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Livre</th>
+                            <th>Adhérent</th>
+                            <th>Emprunté le</th>
+                            <th>Retour prévu</th>
+                            <th>Statut</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loan in loans %}
+                            {% set overdue = loan.status == 'borrowed' and loan.dueDate < date() %}
+                            <tr class="{{ overdue ? 'table-warning' : '' }}">
+                                <td>
+                                    <a href="{{ path('app_book_show', {id: loan.book.id}) }}" class="text-decoration-none fw-semibold">
+                                        {{ loan.book.title|u.truncate(40, '…') }}
+                                    </a>
+                                    <div class="text-muted small">{{ loan.book.author }}</div>
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_member_show', {id: loan.member.id}) }}" class="text-decoration-none">
+                                        {{ loan.member.fullName }}
+                                    </a>
+                                </td>
+                                <td class="text-muted small">{{ loan.borrowedAt|date('d/m/Y') }}</td>
+                                <td class="small {{ overdue ? 'text-danger fw-bold' : 'text-muted' }}">
+                                    {{ loan.dueDate|date('d/m/Y') }}
+                                    {% if overdue %}<i class="bi bi-exclamation-triangle-fill ms-1"></i>{% endif %}
+                                </td>
+                                <td>
+                                    {% if loan.status == 'borrowed' %}
+                                        <span class="badge {{ overdue ? 'bg-danger' : 'bg-warning text-dark' }}">
+                                            {{ overdue ? 'En retard' : 'En cours' }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-success">Retourné</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_loan_show', {id: loan.id}) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if loans.pageCount > 1 %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if loans.currentPageNumber > 1 %}
+                            <li class="page-item">
+                                <button class="page-link" data-model="page" data-value="{{ loans.currentPageNumber - 1 }}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                            </li>
+                        {% endif %}
+                        {% for p in range(max(1, loans.currentPageNumber - 2), min(loans.pageCount, loans.currentPageNumber + 2)) %}
+                            <li class="page-item {{ p == loans.currentPageNumber ? 'active' : '' }}">
+                                <button class="page-link" data-model="page" data-value="{{ p }}">{{ p }}</button>
+                            </li>
+                        {% endfor %}
+                        {% if loans.currentPageNumber < loans.pageCount %}
+                            <li class="page-item">
+                                <button class="page-link" data-model="page" data-value="{{ loans.currentPageNumber + 1 }}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>

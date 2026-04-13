@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Adhérents{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0"><i class="bi bi-people me-2 text-info"></i>Adhérents</h1>
+        <a href="{{ path('app_member_new') }}" class="btn btn-info text-white">
+            <i class="bi bi-person-plus me-1"></i>Nouvel adhérent
+        </a>
+    </div>
+
+    {{ component('MemberSearch') }}
+</div>
+{% endblock %}

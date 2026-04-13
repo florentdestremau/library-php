@@ -1,0 +1,118 @@
+<div {{ attributes }}>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-7">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Nom, prénom, email..."
+                               data-model="debounce(300)|query"
+                               value="{{ query }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" data-model="status">
+                        <option value="">Tous les statuts</option>
+                        <option value="active" {% if status == 'active' %}selected{% endif %}>Actif</option>
+                        <option value="suspended" {% if status == 'suspended' %}selected{% endif %}>Suspendu</option>
+                        <option value="expired" {% if status == 'expired' %}selected{% endif %}>Expiré</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <a href="{{ path('app_member_index') }}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-lg me-1"></i>Reset
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div data-loading="addClass(opacity-50)">
+        {% set members = this.members %}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted small">{{ members.totalItemCount }} adhérent(s)</span>
+        </div>
+
+        {% if members|length == 0 %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-person-x fs-1 d-block mb-3"></i>
+                Aucun adhérent trouvé.
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Statut</th>
+                            <th>Adhésion</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                            <tr>
+                                <td>
+                                    <a href="{{ path('app_member_show', {id: member.id}) }}" class="fw-semibold text-decoration-none">
+                                        {{ member.fullName }}
+                                    </a>
+                                </td>
+                                <td class="text-muted small">{{ member.email }}</td>
+                                <td class="text-muted small">{{ member.phone ?? '—' }}</td>
+                                <td>
+                                    {% set statusMap = {active: 'success', suspended: 'warning', expired: 'secondary'} %}
+                                    {% set statusLabel = {active: 'Actif', suspended: 'Suspendu', expired: 'Expiré'} %}
+                                    <span class="badge bg-{{ statusMap[member.status] ?? 'secondary' }}">
+                                        {{ statusLabel[member.status] ?? member.status }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">
+                                    {% if member.membershipExpiry %}
+                                        {{ member.membershipExpiry|date('d/m/Y') }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_member_show', {id: member.id}) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if members.pageCount > 1 %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if members.currentPageNumber > 1 %}
+                            <li class="page-item">
+                                <button class="page-link" data-model="page" data-value="{{ members.currentPageNumber - 1 }}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                            </li>
+                        {% endif %}
+                        {% for p in range(max(1, members.currentPageNumber - 2), min(members.pageCount, members.currentPageNumber + 2)) %}
+                            <li class="page-item {{ p == members.currentPageNumber ? 'active' : '' }}">
+                                <button class="page-link" data-model="page" data-value="{{ p }}">{{ p }}</button>
+                            </li>
+                        {% endfor %}
+                        {% if members.currentPageNumber < members.pageCount %}
+                            <li class="page-item">
+                                <button class="page-link" data-model="page" data-value="{{ members.currentPageNumber + 1 }}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
