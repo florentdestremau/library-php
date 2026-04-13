@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Book;
 use App\Entity\Loan;
+use App\Entity\Member;
 use App\Form\LoanType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,7 +26,28 @@ class LoanController extends AbstractController
     {
         $loan = new Loan();
         $loan->setDueDate((new \DateTime())->modify('+21 days'));
-        $form = $this->createForm(LoanType::class, $loan);
+
+        $lockedBook = null;
+        $lockedMember = null;
+
+        if ($bookId = $request->query->getInt('book')) {
+            $lockedBook = $em->find(Book::class, $bookId);
+            if ($lockedBook) {
+                $loan->setBook($lockedBook);
+            }
+        }
+
+        if ($memberId = $request->query->getInt('member')) {
+            $lockedMember = $em->find(Member::class, $memberId);
+            if ($lockedMember) {
+                $loan->setMember($lockedMember);
+            }
+        }
+
+        $form = $this->createForm(LoanType::class, $loan, [
+            'locked_book' => $lockedBook !== null,
+            'locked_member' => $lockedMember !== null,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -32,7 +55,11 @@ class LoanController extends AbstractController
 
             if ($book->getAvailableCopies() <= 0) {
                 $this->addFlash('danger', 'Ce livre n\'est plus disponible.');
-                return $this->render('loan/new.html.twig', ['form' => $form]);
+                return $this->render('loan/new.html.twig', [
+                    'form' => $form,
+                    'locked_book' => $lockedBook,
+                    'locked_member' => $lockedMember,
+                ]);
             }
 
             $book->setAvailableCopies($book->getAvailableCopies() - 1);
@@ -43,7 +70,11 @@ class LoanController extends AbstractController
             return $this->redirectToRoute('app_loan_show', ['id' => $loan->getId()]);
         }
 
-        return $this->render('loan/new.html.twig', ['form' => $form]);
+        return $this->render('loan/new.html.twig', [
+            'form' => $form,
+            'locked_book' => $lockedBook,
+            'locked_member' => $lockedMember,
+        ]);
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'])]

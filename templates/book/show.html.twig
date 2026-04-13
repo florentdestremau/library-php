@@ -87,7 +87,7 @@
             <div class="card mb-3">
                 <div class="card-body d-grid gap-2">
                     {% if book.available %}
-                        <a href="{{ path('app_loan_new') }}?book={{ book.id }}" class="btn btn-success">
+                        <a href="{{ path('app_loan_new', {book: book.id}) }}" class="btn btn-success">
                             <i class="bi bi-arrow-left-right me-1"></i>Créer un emprunt
                         </a>
                     {% else %}

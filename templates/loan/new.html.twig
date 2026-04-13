@@ -20,16 +20,51 @@
                 <div class="card-body">
                     {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
                         <div class="row g-3">
-                            <div class="col-12">{{ form_row(form.book) }}</div>
-                            <div class="col-12">{{ form_row(form.member) }}</div>
+
+                            {# Livre — champ autocomplete ou chip verrouillé #}
+                            <div class="col-12">
+                                {% if locked_book %}
+                                    <label class="form-label">Livre</label>
+                                    <div class="d-flex align-items-center gap-2 p-2 rounded border bg-light">
+                                        <i class="bi bi-journal-text text-primary fs-5"></i>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold">{{ locked_book.title }}</div>
+                                            <div class="text-muted small">{{ locked_book.author }} · {{ locked_book.genre }} · {{ locked_book.availableCopies }} dispo</div>
+                                        </div>
+                                        <span class="badge bg-success">Pré-sélectionné</span>
+                                    </div>
+                                {% else %}
+                                    {{ form_row(form.book) }}
+                                {% endif %}
+                            </div>
+
+                            {# Adhérent — champ autocomplete ou chip verrouillé #}
+                            <div class="col-12">
+                                {% if locked_member %}
+                                    <label class="form-label">Adhérent</label>
+                                    <div class="d-flex align-items-center gap-2 p-2 rounded border bg-light">
+                                        <i class="bi bi-person-circle text-info fs-5"></i>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold">{{ locked_member.fullName }}</div>
+                                            <div class="text-muted small">{{ locked_member.email }}</div>
+                                        </div>
+                                        <span class="badge bg-success">Pré-sélectionné</span>
+                                    </div>
+                                {% else %}
+                                    {{ form_row(form.member) }}
+                                {% endif %}
+                            </div>
+
                             <div class="col-md-6">{{ form_row(form.dueDate) }}</div>
                             <div class="col-12">{{ form_row(form.notes) }}</div>
                         </div>
+
                         <div class="d-flex gap-2 mt-4">
                             <button type="submit" class="btn btn-success">
                                 <i class="bi bi-check-lg me-1"></i>Créer l'emprunt
                             </button>
-                            <a href="{{ path('app_loan_index') }}" class="btn btn-outline-secondary">Annuler</a>
+                            <a href="{{ locked_member ? path('app_member_show', {id: locked_member.id}) : (locked_book ? path('app_book_show', {id: locked_book.id}) : path('app_loan_index')) }}"
+                               class="btn btn-outline-secondary">Annuler</a>
                         </div>
                     {{ form_end(form) }}
                 </div>

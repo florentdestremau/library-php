@@ -16,15 +16,21 @@ class LoanType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder
-            ->add('book', BookAutocompleteField::class, [
+        if (!$options['locked_book']) {
+            $builder->add('book', BookAutocompleteField::class, [
                 'label' => 'Livre',
                 'constraints' => [new NotBlank()],
-            ])
-            ->add('member', MemberAutocompleteField::class, [
+            ]);
+        }
+
+        if (!$options['locked_member']) {
+            $builder->add('member', MemberAutocompleteField::class, [
                 'label' => 'Adhérent',
                 'constraints' => [new NotBlank()],
-            ])
+            ]);
+        }
+
+        $builder
             ->add('dueDate', DateType::class, [
                 'label' => 'Date de retour prévue',
                 'widget' => 'single_text',
@@ -40,6 +46,10 @@ class LoanType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(['data_class' => Loan::class]);
+        $resolver->setDefaults([
+            'data_class' => Loan::class,
+            'locked_book' => false,
+            'locked_member' => false,
+        ]);
     }
 }
