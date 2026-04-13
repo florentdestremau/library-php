@@ -2,10 +2,9 @@
 
 namespace App\Form;
 
-use App\Entity\Book;
 use App\Entity\Loan;
-use App\Entity\Member;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Form\Field\BookAutocompleteField;
+use App\Form\Field\MemberAutocompleteField;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -18,26 +17,13 @@ class LoanType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('book', EntityType::class, [
+            ->add('book', BookAutocompleteField::class, [
                 'label' => 'Livre',
-                'class' => Book::class,
-                'choice_label' => fn(Book $b) => $b->getTitle() . ' — ' . $b->getAuthor(),
                 'constraints' => [new NotBlank()],
-                'attr' => ['class' => 'form-select'],
-                'query_builder' => fn($repo) => $repo->createQueryBuilder('b')
-                    ->where('b.availableCopies > 0')
-                    ->orderBy('b.title', 'ASC'),
             ])
-            ->add('member', EntityType::class, [
+            ->add('member', MemberAutocompleteField::class, [
                 'label' => 'Adhérent',
-                'class' => Member::class,
-                'choice_label' => fn(Member $m) => $m->getFullName() . ' (' . $m->getEmail() . ')',
                 'constraints' => [new NotBlank()],
-                'attr' => ['class' => 'form-select'],
-                'query_builder' => fn($repo) => $repo->createQueryBuilder('m')
-                    ->where('m.status = :status')
-                    ->setParameter('status', 'active')
-                    ->orderBy('m.lastName', 'ASC'),
             ])
             ->add('dueDate', DateType::class, [
                 'label' => 'Date de retour prévue',

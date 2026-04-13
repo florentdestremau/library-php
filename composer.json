@@ -40,6 +40,7 @@
         "symfony/string": "8.0.*",
         "symfony/translation": "8.0.*",
         "symfony/twig-bundle": "8.0.*",
+        "symfony/ux-autocomplete": "^3.0",
         "symfony/ux-live-component": "^3.0",
         "symfony/ux-turbo": "^3.0",
         "symfony/ux-twig-component": "^3.0",
